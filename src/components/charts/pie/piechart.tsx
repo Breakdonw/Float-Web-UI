@@ -99,7 +99,8 @@ export default function MonthlySpendingChart({ spendData, info }) {
     )
 
     return (<>
-        <ResponsivePie
+        <ResponsivePie 
+            
             data={spendData}
             margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
             innerRadius={0.6}
@@ -113,7 +114,7 @@ export default function MonthlySpendingChart({ spendData, info }) {
                 modifiers: [
                     [
                         'darker',
-                        0.2
+                        -5
                     ]
                 ]
             }}

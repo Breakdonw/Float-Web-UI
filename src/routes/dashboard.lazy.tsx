@@ -3,7 +3,7 @@ import '../App.css'
 import Footer from '../components/footer/footer'
 import MonthlySpendingChart from '@/components/charts/pie/piechart'
 import Reoccuring from '../components/reoccuring purchases/reoccuring'
-
+import Savings from '@/components/Savings/savings'
 
 
 export const Route = createLazyFileRoute('/dashboard')({
@@ -61,9 +61,8 @@ function Dashboard() {
           </div>
         </div>
         <div className=' w-full h-full columns-3 p-10'>
-          <div className='flex h-full bg-slate-700  rounded-xl '>
-      
-
+          <div className='flex flex-row  h-full bg-slate-700  rounded-xl '>
+            <div className='w-full'><Savings/></div>
           </div>
           <div className='flex  h-full bg-slate-700 rounded-xl'> 4</div>
           <div className='flex h-full bg-slate-700  rounded-xl'> 5</div>
