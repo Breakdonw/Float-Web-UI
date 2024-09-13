@@ -1,55 +1,34 @@
-// install (please try to align the version of installed @nivo packages)
-// yarn add @nivo/pie
+import { simpleTransaction } from '@/api/Transactions'
 import { LegendDatum, ResponsivePie, } from '@nivo/pie'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 // make sure parent container have a defined height when using
 // responsive component, otherwise height will be 0 and
 // no chart will be rendered.
-// website examples showcase many properties,
-// you'll often use just a few of them.
-let fakedata = [
-    {
-        "id": "ruby",
-        "label": "ruby",
-        "value": 112,
-        "color": "hsl(292, 70%, 50%)"
-    },
-    {
-        "id": "css",
-        "label": "css",
-        "value": 558,
-        "color": "hsl(264, 70%, 50%)"
-    },
-    {
-        "id": "javascript",
-        "label": "javascript",
-        "value": 195,
-        "color": "hsl(200, 70%, 50%)"
-    },
-    {
-        "id": "haskell",
-        "label": "haskell",
-        "value": 586,
-        "color": "hsl(320, 70%, 50%)"
-    },
-    {
-        "id": "sass",
-        "label": "sass",
-        "value": 509,
-        "color": "hsl(226, 70%, 50%)"
-    }
-]
 
 
 
 
+
+/**
+ * The `CenteredMetric` function calculates the total value from an array of data points and displays
+ * it along with additional text in a centered position on a React component.
+ * 
+ * Args:
+ *   : The `CenteredMetric` component takes in the following parameters:
+ * 
+ * Returns:
+ *   The `CenteredMetric` component is returning a JSX element that consists of a `<text>` element with
+ * the total value of the dataWithArc array displayed at the specified centerX and centerY coordinates.
+ * Additionally, there are two `<tspan>` elements within the `<text>` element that display messages
+ * about monthly spending. The text elements have specific styling for font size, weight, color, and
+ * positioning.
+ */
 const CenteredMetric = ({ dataWithArc, centerX, centerY }) => {
     let total = 0
     dataWithArc.forEach(datum => {
         total += datum.value
     })
-
     return (
         <>
             <text
@@ -63,17 +42,17 @@ const CenteredMetric = ({ dataWithArc, centerX, centerY }) => {
                     fill: 'white',
                 }}
             >
-                ${total}
-                <tspan 
-                y={centerY + 30}
+                ${total.toLocaleString("en-us")}
+                <tspan
+                    y={centerY + 30}
                     x={centerX}
                     style={{
                         color: 'white',
                         fontSize: '24%',
                     }}
                 >Your monthly spend </tspan>
-                                <tspan 
-                y={centerY + 45}
+                <tspan
+                    y={centerY + 45}
                     x={centerX}
                     style={{
                         color: 'white',
@@ -87,9 +66,52 @@ const CenteredMetric = ({ dataWithArc, centerX, centerY }) => {
 }
 
 
+/**
+ * The function `formatData` takes a Map of simple transactions, combines data based on category name,
+ * and returns an array of formatted transaction objects.
+ * 
+ * Args:
+ *   data: The `data` parameter in the `formatData` function is a Map that contains simpleTransaction
+ * objects with numeric keys. Each simpleTransaction object has properties like `category`, `amount`,
+ * etc. The goal of the function is to format this data into an array of objects with specific
+ * properties like `id
+ * 
+ * Returns:
+ *   The function `formatData` is returning an array of objects that represent the combined data from
+ * the input `Map<number, simpleTransaction>`. Each object in the array contains the following
+ * properties: `id`, `label`, `value`, and `color`.
+ */
+function formatData(data: Map<number, simpleTransaction>) {
+    let combinedData = new Map()
+
+
+    Array.from(data.values()).forEach(transact => {
+        const existing = combinedData.get(transact.category.name) || { id: transact.category.name, label: transact.category.name, value: 0, color: transact.category.color };
+        combinedData.set(transact.category.name, {
+            id: transact.category.name,
+            label: transact.category.name,
+            value: existing.value + transact.amount,
+            color: transact.category.color
+        })
+    })
+
+    const combinedDataArray = Array.from(combinedData, ([key, value]) => ({
+        id: String(value.id).charAt(0).toUpperCase() + String(value.id).slice(1),
+        label: String(value.label).charAt(0).toUpperCase() + String(value.label).slice(1),
+        value: value.value,
+        color: value.color
+    }));
+
+
+
+    return combinedDataArray
+
+}
+
+
 export default function MonthlySpendingChart({ spendData, info }) {
     const [customLegends, setCustomLegends] = useState<LegendDatum<SampleDatum>[]>([])
-
+    const [data, setdata] = useState([{}])
     const valueFormat = useCallback(
         (value: number) =>
             `${Number(value).toLocaleString('ru-RU', {
@@ -97,18 +119,37 @@ export default function MonthlySpendingChart({ spendData, info }) {
             })} ₽`,
         []
     )
+    useEffect(() => {
+        setdata(formatData(spendData))
+    })
 
     return (<>
-        <ResponsivePie 
-            
-            data={spendData}
+        <ResponsivePie
+
+            data={data}
             margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
             innerRadius={0.6}
+            theme={{
+                "tooltip": {
+                    "wrapper": {},
+                    "container": {
+                        "background": "#ffffff",
+                        "color": "#333333",
+                        "fontSize": 12
+                    },
+                    "basic": {},
+                    "chip": {},
+                    "table": {},
+                    "tableCell": {},
+                    "tableCellValue": {}
+                }
+            }}
             padAngle={0.7}
             cornerRadius={3}
+            valueFormat={"$,.2f"}
             activeOuterRadiusOffset={8}
             forwardLegendData={setCustomLegends}
-            borderWidth={1}
+            borderWidth={2}
             borderColor={{
                 from: 'color',
                 modifiers: [
@@ -119,7 +160,7 @@ export default function MonthlySpendingChart({ spendData, info }) {
                 ]
             }}
             arcLinkLabelsSkipAngle={10}
-            arcLinkLabelsTextColor="#333333"
+            arcLinkLabelsTextColor="#fff"
             arcLinkLabelsThickness={2}
             arcLinkLabelsColor={{ from: 'color' }}
             arcLabelsSkipAngle={10}
@@ -137,7 +178,7 @@ export default function MonthlySpendingChart({ spendData, info }) {
                     id: 'dots',
                     type: 'patternDots',
                     background: 'inherit',
-                    color: 'rgba(255, 255, 255, 0.3)',
+                    color: 'rgba(0, 255, 255, 0.3)',
                     size: 4,
                     padding: 1,
                     stagger: true
@@ -152,56 +193,7 @@ export default function MonthlySpendingChart({ spendData, info }) {
                     spacing: 10
                 }
             ]}
-            fill={[
-                {
-                    match: {
-                        id: 'ruby'
-                    },
-                    id: 'dots'
-                },
-                {
-                    match: {
-                        id: 'c'
-                    },
-                    id: 'dots'
-                },
-                {
-                    match: {
-                        id: 'go'
-                    },
-                    id: 'dots'
-                },
-                {
-                    match: {
-                        id: 'python'
-                    },
-                    id: 'dots'
-                },
-                {
-                    match: {
-                        id: 'scala'
-                    },
-                    id: 'lines'
-                },
-                {
-                    match: {
-                        id: 'lisp'
-                    },
-                    id: 'lines'
-                },
-                {
-                    match: {
-                        id: 'elixir'
-                    },
-                    id: 'lines'
-                },
-                {
-                    match: {
-                        id: 'javascript'
-                    },
-                    id: 'lines'
-                }
-            ]}
+
             legends={[
                 {
                     anchor: 'bottom',
@@ -227,9 +219,9 @@ export default function MonthlySpendingChart({ spendData, info }) {
                     ]
                 }
             ]}
-            layers={['legends','arcs', 'arcLabels', 'arcLinkLabels', CenteredMetric]}
+            layers={['legends', 'arcs', 'arcLabels', 'arcLinkLabels', CenteredMetric]}
         />
-        
-    
+
+
     </>)
 }

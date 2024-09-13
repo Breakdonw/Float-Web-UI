@@ -1,5 +1,4 @@
-import { serverResponse } from "@/types";
-import { log } from "console";
+
 import axios, { isCancel, AxiosError, AxiosResponse } from "axios";
 
 const APISERVER = import.meta.env.VITE_API_SERVER_URL+"/User";
@@ -9,11 +8,11 @@ function setJwt(jwt) {
 
 }
 
-function clearJwt() {
+export function clearJwt() {
   localStorage.removeItem("jwt");
 }
 
-function getLocalJwt() {
+export function getLocalJwt() {
   return localStorage.getItem("jwt");
 }
 
