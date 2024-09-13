@@ -7,7 +7,7 @@ import Savings from '@/components/Savings/savings'
 import CreditCardPayoff from '@/components/creditcard/creditcard'
 import Transactions from '@/components/transacations/transactions'
 import { verifyJwt } from '@/api/login'
-import { getUserTransactions, simpleTransaction } from '@/api/Transactions'
+import { getUserReoccuring, getUserTransactions, simpleTransaction } from '@/api/Transactions'
 import { useEffect, useMemo, useState } from 'react'
 
 export const Route = createFileRoute('/dashboard')({
@@ -41,6 +41,8 @@ function Dashboard() {
 
   const fetchData = async () => {
       setTransactionData(await getUserTransactions())
+      setReoccuringData(await getUserReoccuring())
+
   }
 
   return (
@@ -53,10 +55,10 @@ function Dashboard() {
               {transactionData && transactionData.size? <MonthlySpendingChart spendData={transactionData} info={"test string"} /> : null}
             </div>
           </div>
-          <div className='w-full h-full bg-slate-700 rounded-xl'>
-            <div className='flex flex-row items-center justify-center h-full w-full'>
-              <Reoccuring  />
-            </div>
+          <div className='w-full h-full bg-slate-700 rounded-xl flex flex-row overflow-x-hidden '>
+              
+              {reoccuringData && reoccuringData.size > 0 ? <Reoccuring  reoccuringPurchases={reoccuringData} /> :  null  }
+
           </div>
         </div>
         <div className=' w-full h-full columns-3 p-10 '>

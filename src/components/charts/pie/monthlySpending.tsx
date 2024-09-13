@@ -84,7 +84,6 @@ const CenteredMetric = ({ dataWithArc, centerX, centerY }) => {
 function formatData(data: Map<number, simpleTransaction>) {
     let combinedData = new Map()
 
-
     Array.from(data.values()).forEach(transact => {
         const existing = combinedData.get(transact.category.name) || { id: transact.category.name, label: transact.category.name, value: 0, color: transact.category.color };
         combinedData.set(transact.category.name, {
@@ -112,16 +111,9 @@ function formatData(data: Map<number, simpleTransaction>) {
 export default function MonthlySpendingChart({ spendData, info }) {
     const [customLegends, setCustomLegends] = useState<LegendDatum<SampleDatum>[]>([])
     const [data, setdata] = useState([{}])
-    const valueFormat = useCallback(
-        (value: number) =>
-            `${Number(value).toLocaleString('ru-RU', {
-                minimumFractionDigits: 2,
-            })} ₽`,
-        []
-    )
     useEffect(() => {
         setdata(formatData(spendData))
-    })
+    },[])
 
     return (<>
         <ResponsivePie
