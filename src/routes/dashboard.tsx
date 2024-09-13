@@ -7,7 +7,7 @@ import Savings from '@/components/Savings/savings'
 import CreditCardPayoff from '@/components/creditcard/creditcard'
 import Transactions from '@/components/transacations/transactions'
 import { verifyJwt } from '@/api/login'
-import { getUserTransactions, SimpleTransaction } from '@/api/Transactions'
+import { getUserTransactions, simpleTransaction } from '@/api/Transactions'
 import { useEffect, useMemo, useState } from 'react'
 
 export const Route = createFileRoute('/dashboard')({
