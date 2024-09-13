@@ -1,4 +1,4 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import '../App.css'
 import Footer from '../components/footer/footer'
 import MonthlySpendingChart from '@/components/charts/pie/monthlySpending'
@@ -6,9 +6,20 @@ import Reoccuring from '../components/reoccuring purchases/reoccuring'
 import Savings from '@/components/Savings/savings'
 import CreditCardPayoff from '@/components/creditcard/creditcard'
 import Transactions from '@/components/transacations/transactions'
+import { verifyJwt } from '@/api/login'
 
-export const Route = createLazyFileRoute('/dashboard')({
-  component: Dashboard
+export const Route = createFileRoute('/dashboard')({
+  component: Dashboard,
+  beforeLoad: async ({location}) =>{
+    if(!verifyJwt()){
+      throw redirect({
+        to:'/',
+        search:{
+          redirect: location.href
+        }
+      })
+    }
+  }
 })
 
 
