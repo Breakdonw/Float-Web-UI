@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Linechart } from "../charts/linechart/linechart";
 
 
-export default function Savings() {
+export default function Savings({spenddata}) {
     const [showExtraSavingsdata, setshowExtraSavingsdata] = useState(true)
 
     

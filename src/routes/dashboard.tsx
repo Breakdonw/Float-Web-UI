@@ -63,7 +63,7 @@ function Dashboard() {
         </div>
         <div className=' w-full h-full columns-3 p-10 '>
           <div className='flex flex-row  h-full bg-slate-700  rounded-xl '>
-            <div className='w-full'><Savings /></div>
+            <div className='w-full'><Savings spenddata={transactionData} /></div>
           </div>
           <div className='flex flex-row  h-full bg-slate-700 rounded-xl'>
             {/* <CreditCardPayoff spendData={transactionData} info={"test string"}/> */}
