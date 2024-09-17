@@ -1,5 +1,6 @@
 
 import axios, { isCancel, AxiosError, AxiosResponse } from "axios";
+import { clear } from "console";
 
 const APISERVER = import.meta.env.VITE_API_SERVER_URL+"/User";
 function setJwt(jwt) {
@@ -26,10 +27,11 @@ export async function verifyJwt() {
         accessToken: jwt,
       }
     });
-    if (response.status == 201){ throw "Token Expired"};
+    if (response.status == 201){ clearJwt();throw "Token Expired"};
     console.log("Verifed JWT")
     clientResponse.error = false;
     clientResponse.errorMsg = "";
+    
     return true
 
   } catch (error) {
@@ -37,6 +39,7 @@ export async function verifyJwt() {
     clientResponse.errorMsg = error.message || 'An unexpected error occurred';
     console.error(`Error: ${error}`);
     console.warn("An error occurred while attempting to make a JWT Verify request to the API server. See above error message for more info.");
+    if(error.message == "jwt expired"){clearJwt() }
     return false
   }
 }

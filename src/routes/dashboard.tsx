@@ -7,13 +7,19 @@ import Savings from '@/components/Savings/savings'
 import CreditCardPayoff from '@/components/creditcard/creditcard'
 import Transactions from '@/components/transacations/transactions'
 import { verifyJwt } from '@/api/login'
-import { getUserReoccuring, getUserTransactions, simpleTransaction } from '@/api/Transactions'
+import { getSavingsData, getUserReoccuring, getUserTransactions, getCreditCardData } from '@/api/Transactions'
 import { useEffect, useMemo, useState } from 'react'
+import { toast } from '@/hooks/use-toast'
 
 export const Route = createFileRoute('/dashboard')({
   component: Dashboard,
   beforeLoad: async ({location}) =>{
-    if(!verifyJwt()){
+    if(await verifyJwt() === false ){
+      toast({
+        title: "Error",
+        variant: "destructive",
+        description: "Bad JWT",
+    })
       throw redirect({
         to:'/',
         search:{
@@ -34,6 +40,8 @@ function Dashboard() {
   
   const [transactionData, setTransactionData] = useState(new Map )
   const [reoccuringData, setReoccuringData] = useState(new Map)
+  const [savingsData, setSavingsData] = useState(new Map())
+  const [creditCardData, setCreditCardData] = useState(new Map())
   useEffect(()=>{
 
     fetchData();
@@ -42,6 +50,8 @@ function Dashboard() {
   const fetchData = async () => {
       setTransactionData(await getUserTransactions())
       setReoccuringData(await getUserReoccuring())
+      setSavingsData(await getSavingsData())
+      setCreditCardData(await getCreditCardData())
 
   }
 
@@ -63,12 +73,14 @@ function Dashboard() {
         </div>
         <div className=' w-full h-full columns-3 p-10 '>
           <div className='flex flex-row  h-full bg-slate-700  rounded-xl '>
-            <div className='w-full'><Savings spenddata={transactionData} /></div>
+            {savingsData && savingsData.size > 0 ? <Savings spenddata={savingsData} /> : null}
           </div>
           <div className='flex flex-row  h-full bg-slate-700 rounded-xl'>
-            {/* <CreditCardPayoff spendData={transactionData} info={"test string"}/> */}
+           {creditCardData && creditCardData.size > 0 ?  <CreditCardPayoff spendData={creditCardData} info={"test string"}/>: null}
           </div>
-          {/* <div className='flex h-full bg-slate-700  rounded-xl'> <Transactions spendData={transaction} /> </div> */}
+          <div className='flex h-full bg-slate-700  rounded-xl'> 
+            {/* <Transactions spendData={transaction} /> */}
+             </div>
         </div>
         <Footer />
       </div>

@@ -1,54 +1,78 @@
-// install (please try to align the version of installed @nivo packages)
-// yarn add @nivo/pie
-import { LegendDatum, ResponsivePie, } from '@nivo/pie'
-import { useCallback, useState } from 'react'
+import { simpleTransaction } from "@/api/Transactions";
+import { LegendDatum, ResponsivePie } from "@nivo/pie";
+import dayjs from "dayjs";
+import { useCallback, useEffect, useState } from "react";
 
-// make sure parent container have a defined height when using
-// responsive component, otherwise height will be 0 and
-// no chart will be rendered.
-// website examples showcase many properties,
-// you'll often use just a few of them.
-let fakedata = [
-    {
-        "id": "ruby",
-        "label": "ruby",
-        "value": 112,
-        "color": "hsl(292, 70%, 50%)"
-    },
-    {
-        "id": "css",
-        "label": "css",
-        "value": 558,
-        "color": "hsl(264, 70%, 50%)"
-    },
-    {
-        "id": "javascript",
-        "label": "javascript",
-        "value": 195,
-        "color": "hsl(200, 70%, 50%)"
-    },
-    {
-        "id": "haskell",
-        "label": "haskell",
-        "value": 586,
-        "color": "hsl(320, 70%, 50%)"
-    },
-    {
-        "id": "sass",
-        "label": "sass",
-        "value": 509,
-        "color": "hsl(226, 70%, 50%)"
+interface CreditCardAccount {
+    id: number;
+    accountNumber: number;
+    provider: string;
+    nickName: string;
+    balance: number; // Total amount owed
+    intrest: number; // Annual interest rate in percentage
+    maxBalance: number; // Maximum credit limit
+    paymentDue: number; // Amount due for the next payment
+    nextPaymentDueDate: Date;
+}
+
+interface PayOffChartData {
+    amountToAvoidInterest: number;
+    interestAmount: number;
+    remainingBalance: number;
+}
+
+export const calculatePayOffData = (
+    account: CreditCardAccount
+): PayOffChartData => {
+    let { balance, intrest, paymentDue } = account;
+    // Amount to avoid interest is the entire balance due
+    const amountToAvoidInterest = balance;
+    if (paymentDue === undefined) {
+        paymentDue = balance * (intrest / 100);
     }
-]
+    // If the payment due is less than the total balance, calculate interest on the remaining balance
+    const remainingBalance = balance - paymentDue;
+    const interestAmount =
+        remainingBalance > 0 ? remainingBalance * (intrest / 100) : 0;
 
+    return {
+        amountToAvoidInterest,
+        interestAmount,
+        remainingBalance,
+    };
+};
 
+// Generate the pie chart data for the Nivo chart
+export const generatePieChartData = (account: CreditCardAccount): any[] => {
+    const { amountToAvoidInterest, interestAmount, remainingBalance } =
+        calculatePayOffData(account);
+    console.log(account);
+    const chartData = [
+        {
+            id: "Total accured debt",
+            label: "Total accured debt",
+            value: amountToAvoidInterest,
+        },
+        {
+            id: "Interest Charged",
+            label: "Interest Charged",
+            value: interestAmount,
+        },
+        {
+            id: "Remaining Balance",
+            label: "Remaining Balance",
+            value: remainingBalance,
+        },
+    ];
 
+    return chartData;
+};
 
 const CenteredMetric = ({ dataWithArc, centerX, centerY }) => {
-    let total = 0
-    dataWithArc.forEach(datum => {
-        total += datum.value
-    })
+    let total = 0;
+    dataWithArc.forEach((datum) => {
+        total += datum.value;
+    });
 
     return (
         <>
@@ -58,220 +82,159 @@ const CenteredMetric = ({ dataWithArc, centerX, centerY }) => {
                 textAnchor="middle"
                 dominantBaseline="top"
                 style={{
-                    fontSize: '250%',
+                    fontSize: "150%",
                     fontWeight: 600,
-                    fill: 'white',
+                    fill: "white",
                 }}
             >
-                ${total}
+                ${total.toLocaleString("en-us")}
                 <tspan
                     y={centerY + 30}
                     x={centerX}
                     style={{
-                        color: 'white',
-                        fontSize: '24%',
+                        color: "white",
+                        fontSize: "50%",
                     }}
-                >Your monthly spend </tspan>
+                >
+                    Your monthly spend{" "}
+                </tspan>
                 <tspan
                     y={centerY + 45}
                     x={centerX}
                     style={{
-                        color: 'white',
-                        fontSize: '24%',
+                        color: "white",
+                        fontSize: "50%",
                     }}
-                >is up this month!</tspan>
+                >
+                    is up this month!
+                </tspan>
             </text>
-
         </>
-    )
-}
-
+    );
+};
 
 export default function CreditCardSpending({ spendData, info }) {
-    const [customLegends, setCustomLegends] = useState<LegendDatum<SampleDatum>[]>([])
+    const [customLegends, setCustomLegends] = useState<
+        LegendDatum<SampleDatum>[]
+    >([]);
+    const [data, setdata] = useState([{}]);
+    useEffect(() => {
+        let tempData = [];
+        Array.from(spendData.values()).forEach((account) => {
+            tempData.push(account);
+        });
 
-    const valueFormat = useCallback(
-        (value: number) =>
-            `${Number(value).toLocaleString('ru-RU', {
-                minimumFractionDigits: 2,
-            })} ₽`,
-        []
-    )
+        setdata(generatePieChartData(tempData[0]));
+    }, []);
 
     return (
         <>
-            <div className='container w-1/2 h-full col col-auto'>
+            <div className="container w-[60%] h-full col col-auto">
                 <ResponsivePie
-
-                    data={spendData}
-                    margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+                    data={data}
+                    margin={{ top: 40, right: 60, bottom: 80, left: 80 }}
                     innerRadius={0.6}
                     padAngle={0.7}
                     cornerRadius={3}
+                    valueFormat={"$,.2f"}
                     activeOuterRadiusOffset={8}
                     forwardLegendData={setCustomLegends}
                     borderWidth={1}
                     borderColor={{
-                        from: 'color',
-                        modifiers: [
-                            [
-                                'darker',
-                                -5
-                            ]
-                        ]
+                        from: "color",
+                        modifiers: [["darker", -5]],
                     }}
-                    arcLinkLabelsSkipAngle={10}
-                    arcLinkLabelsTextColor="#333333"
+                    arcLinkLabelsSkipAngle={0}
+                    arcLinkLabelsTextColor="#fff"
                     arcLinkLabelsThickness={2}
-                    arcLinkLabelsColor={{ from: 'color' }}
-                    arcLabelsSkipAngle={10}
+                    arcLinkLabelsColor={{ from: "color" }}
+                    arcLabelsSkipAngle={0}
                     arcLabelsTextColor={{
-                        from: 'color',
-                        modifiers: [
-                            [
-                                'darker',
-                                -5
-                            ]
-                        ]
+                        from: "color",
+                        modifiers: [["darker", -5]],
                     }}
                     defs={[
                         {
-                            id: 'dots',
-                            type: 'patternDots',
-                            background: 'inherit',
-                            color: 'rgba(255, 255, 255, 0.3)',
+                            id: "dots",
+                            type: "patternDots",
+                            background: "inherit",
+                            color: "rgba(255, 255, 255, 0.3)",
                             size: 4,
                             padding: 1,
-                            stagger: true
+                            stagger: true,
                         },
                         {
-                            id: 'lines',
-                            type: 'patternLines',
-                            background: 'inherit',
-                            color: 'rgba(255, 255, 255, 0.3)',
+                            id: "lines",
+                            type: "patternLines",
+                            background: "inherit",
+                            color: "rgba(255, 255, 255, 0.3)",
                             rotation: -45,
                             lineWidth: 6,
-                            spacing: 10
-                        }
+                            spacing: 10,
+                        },
                     ]}
-                    fill={[
-                        {
-                            match: {
-                                id: 'ruby'
-                            },
-                            id: 'dots'
+                    fill={[]}
+                    theme={{
+                        text: {
+                            fontSize: 11,
+                            fill: "#ffffff",
+                            outlineWidth: 0,
+                            outlineColor: "#ffffff",
                         },
-                        {
-                            match: {
-                                id: 'c'
+                        tooltip: {
+                            wrapper: {},
+                            container: {
+                                background: "#ffffff",
+                                color: "#333333",
+                                fontSize: 12,
                             },
-                            id: 'dots'
+                            basic: {},
+                            chip: {},
+                            table: {},
+                            tableCell: {},
+                            tableCellValue: {},
                         },
-                        {
-                            match: {
-                                id: 'go'
-                            },
-                            id: 'dots'
-                        },
-                        {
-                            match: {
-                                id: 'python'
-                            },
-                            id: 'dots'
-                        },
-                        {
-                            match: {
-                                id: 'scala'
-                            },
-                            id: 'lines'
-                        },
-                        {
-                            match: {
-                                id: 'lisp'
-                            },
-                            id: 'lines'
-                        },
-                        {
-                            match: {
-                                id: 'elixir'
-                            },
-                            id: 'lines'
-                        },
-                        {
-                            match: {
-                                id: 'javascript'
-                            },
-                            id: 'lines'
-                        }
-                    ]}
+                    }}
                     legends={[
                         {
-                            anchor: 'bottom',
-                            direction: 'row',
+                            anchor: "bottom",
+                            direction: "row",
                             justify: false,
                             translateX: 0,
                             translateY: 56,
-                            itemsSpacing: 0,
+                            itemsSpacing: 50,
                             itemWidth: 100,
                             itemHeight: 18,
-                            itemTextColor: '#999',
-                            itemDirection: 'left-to-right',
+                            itemTextColor: "#fff",
+                            itemDirection: "left-to-right",
                             itemOpacity: 1,
                             symbolSize: 18,
-                            symbolShape: 'circle',
+                            symbolShape: "circle",
                             effects: [
                                 {
-                                    on: 'hover',
+                                    on: "hover",
                                     style: {
-                                        itemTextColor: '#000'
-                                    }
-                                }
-                            ]
-                        }
+                                        itemTextColor: "#000",
+                                    },
+                                },
+                            ],
+                        },
                     ]}
-                    layers={[, 'arcs', 'arcLabels', 'arcLinkLabels', CenteredMetric]}
+                    layers={["legends", "arcs", "arcLabels", CenteredMetric]}
                 ></ResponsivePie>
+            </div>
 
-            </div >
+            <div className="flex flex-col p-5 justify-center items-center">
+                <span className="">You need to pay a minimum of <b>${data[1].value.toLocaleString('en-us')}</b> to avoid paying intrest this month.</span>
+                    <hr className="w-[100%] my-3" />
+                <h3 className="mt-5">Spending breakdown</h3>
+                <ul>
+                    <li>Total Accured Debt: ${data[0].value.toLocaleString('en-us')}</li>
+                    <li>Minimum Intrest Payment: ${data[1].value.toLocaleString('en-us')}</li>
+                    <li>Remaining Balance: ${data[2].value.toLocaleString('en-us')}</li>
 
-
-            <div className='col col-auto m-0'>
-                <div>
-                    <table className="Table">
-                        <thead>
-                            <tr>
-                                <th>Color</th>
-                                <th>ID</th>
-                                <th>Value</th>
-                                <th>Formatted Value</th>
-                                <th>Label</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {customLegends.map(legend => {
-                                return (
-                                    <tr key={legend.id}>
-                                        <td>
-                                            <span
-                                                className="Chip"
-                                                style={{ backgroundColor: legend.color }}
-                                            />
-                                        </td>
-                                        <td>
-                                            <em>{legend.id}</em>
-                                        </td>
-                                        <td>
-                                            <em>{legend.data.value}</em>
-                                        </td>
-                                        <td>{legend.data.formattedValue}</td>
-                                        <td>{legend.label}</td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                </ul>
             </div>
         </>
-    )
+    );
 }

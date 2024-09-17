@@ -86,13 +86,13 @@ function Index() {
                                     <input type="email" name="email" id="email" value={email} onChange={(e) => {
                                         setEmail(e.target.value);
                                         e.preventDefault();
-                                    }} className="bg-slate-800 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@company.com" />
+                                    }} className="bg-slate-800 border border-gray-300 text-white rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@company.com" />
                                 </div>
                                 <div>
                                     <input type="password" value={password} onChange={(e) => {
                                         setPassword(e.target.value);
                                         e.preventDefault();
-                                    }} name="password" id="password" placeholder="••••••••" className="bg-slate-800 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                                    }} name="password" id="password" placeholder="••••••••" className="bg-slate-800 border border-gray-300 text-white rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-start">

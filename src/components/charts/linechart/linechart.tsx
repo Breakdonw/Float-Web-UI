@@ -278,40 +278,39 @@ const data = [
 // no chart will be rendered.
 // website examples showcase many properties,
 // you'll often use just a few of them.
-export const Linechart = ({  /* see data tab */ }) => (
+export const Linechart = ({  spendData}) => (
     <ResponsiveLine
-        data={data}
-        margin={{ top: 50, right: 60, bottom: 50, left: 40 }}
-        xScale={{ type: 'point' }}
-        yScale={{
-            type: 'linear',
-            min: 'auto',
-            max: 'auto',
-            stacked: true,
-            reverse: false
-            
-        }}
-        yFormat=" >-.2f"
-        axisTop={null}
-        axisRight={null}
-        axisBottom={{
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
-            legend: 'transportation',
-            legendOffset: 36,
-            legendPosition: 'middle',
-            truncateTickAt: 0,
-        }}
-        axisLeft={{
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
-            legend: 'count',
-            legendOffset: -40,
-            legendPosition: 'middle',
-            truncateTickAt: 0
-        }}
+        data={spendData}
+        margin={{ top: 50, right: 80, bottom: 50, left: 50 }}
+        xScale={{
+          type: 'time',
+          format: '%Y-%m-%d',
+          useUTC: false,
+          precision: 'day',
+      }}
+      xFormat="time:%Y-%m-%d"
+      yScale={{
+          type: 'linear',
+          // stacked: boolean('stacked', false),
+      }}
+      axisLeft={{
+          legend: 'linear scale',
+          legendOffset: 12,
+      }}
+      axisBottom={{
+          format: '%b %d',
+          tickValues: 'every 2 days',
+          legend: 'time scale',
+          legendOffset: -12,
+      }}
+      axisTop={null}
+      theme={{"text": {
+        "fontSize": 11,
+        "fill": "#ffffff",
+        "outlineWidth": 0,
+        "outlineColor": "#ffffff"
+    },}}
+      axisRight={null}
         pointSize={10}
         pointColor={{ theme: 'background' }}
         pointBorderWidth={2}
@@ -322,6 +321,7 @@ export const Linechart = ({  /* see data tab */ }) => (
         areaOpacity={0.55}
         enableTouchCrosshair={true}
         useMesh={true}
+        enableSlices={false}
         legends={[
             {
                 anchor: 'bottom-right',
@@ -336,7 +336,7 @@ export const Linechart = ({  /* see data tab */ }) => (
                 itemOpacity: 0.75,
                 symbolSize: 12,
                 symbolShape: 'circle',
-                symbolBorderColor: 'rgba(0, 0, 0, .5)',
+                symbolBorderColor: 'rgba(255, 255, 255, .5)',
                 effects: [
                     {
                         on: 'hover',
