@@ -6,23 +6,25 @@ import Reoccuring from '../components/reoccuring purchases/reoccuring'
 import Savings from '@/components/Savings/savings'
 import CreditCardPayoff from '@/components/creditcard/creditcard'
 import Transactions from '@/components/transacations/transactions'
-import { verifyJwt } from '@/api/login'
-import { getSavingsData, getUserReoccuring, getUserTransactions, getCreditCardData } from '@/api/Transactions'
+import { clearJwt, verifyJwt } from '@/api/login'
+import { getSavingsData, getUserReoccuring, getUserTransactions, getCreditCardData, removeUserAccount, getUserAccountData } from '@/api/Transactions'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from '@/hooks/use-toast'
+import * as Dialog from '@radix-ui/react-dialog';
+import AccountGrid, { createAccount } from '@/components/grids/accountgrid'
 
 export const Route = createFileRoute('/dashboard')({
   component: Dashboard,
-  beforeLoad: async ({location}) =>{
-    if(await verifyJwt() === false ){
+  beforeLoad: async ({ location }) => {
+    if (await verifyJwt() === false) {
       toast({
         title: "Error",
         variant: "destructive",
         description: "Bad JWT",
-    })
+      })
       throw redirect({
-        to:'/',
-        search:{
+        to: '/',
+        search: {
           redirect: location.href
         }
       })
@@ -31,28 +33,39 @@ export const Route = createFileRoute('/dashboard')({
 })
 
 
+export function Signout(e){
+  e.preventDefault()
+  clearJwt()
+  throw redirect({
+    to: '/',
+    search: {
+      redirect: location.href
+    }
+  })
+}
+
+
 
 
 
 function Dashboard() {
 
 
-  
-  const [transactionData, setTransactionData] = useState(new Map )
+
+  const [transactionData, setTransactionData] = useState(new Map)
   const [reoccuringData, setReoccuringData] = useState(new Map)
   const [savingsData, setSavingsData] = useState(new Map())
   const [creditCardData, setCreditCardData] = useState(new Map())
-  useEffect(()=>{
+  useEffect(() => {
 
     fetchData();
-  },[])
+  }, [])
 
   const fetchData = async () => {
-      setTransactionData(await getUserTransactions())
-      setReoccuringData(await getUserReoccuring())
-      setSavingsData(await getSavingsData())
-      setCreditCardData(await getCreditCardData())
-
+    setTransactionData(await getUserTransactions())
+    setReoccuringData(await getUserReoccuring())
+    setSavingsData(await getSavingsData())
+    setCreditCardData(await getCreditCardData())
   }
 
   return (
@@ -62,12 +75,12 @@ function Dashboard() {
         <div className='w-full h-full columns-2 p-10 pb-0'>
           <div className='w-full h-full bg-slate-700 rounded-xl'>
             <div className='flex flex-row justify-center items-center  w-full h-full ' >
-              {transactionData && transactionData.size? <MonthlySpendingChart spendData={transactionData} info={"test string"} /> : null}
+              {transactionData && transactionData.size ? <MonthlySpendingChart spendData={transactionData} info={"test string"} /> : null}
             </div>
           </div>
           <div className='w-full h-full bg-slate-700 rounded-xl flex flex-row overflow-x-hidden '>
-              
-              {reoccuringData && reoccuringData.size > 0 ? <Reoccuring  reoccuringPurchases={reoccuringData} /> :  null  }
+
+            {reoccuringData && reoccuringData.size > 0 ? <Reoccuring reoccuringPurchases={reoccuringData} /> : null}
 
           </div>
         </div>
@@ -76,11 +89,50 @@ function Dashboard() {
             {savingsData && savingsData.size > 0 ? <Savings spenddata={savingsData} /> : null}
           </div>
           <div className='flex flex-row  h-full bg-slate-700 rounded-xl'>
-           {creditCardData && creditCardData.size > 0 ?  <CreditCardPayoff spendData={creditCardData} info={"test string"}/>: null}
+            {creditCardData && creditCardData.size > 0 ? <CreditCardPayoff spendData={creditCardData} /> : null}
           </div>
-          <div className='flex h-full bg-slate-700  rounded-xl'> 
-            {/* <Transactions spendData={transaction} /> */}
-             </div>
+          <div className='flex flex-col h-full   bg-slate-700  rounded-xl'>
+            <span className='row my-5'> <h1>Welcome user!</h1></span>
+            <hr className='row w-full ' />
+            <div className='p-5 justify-between space-y-5'>
+              <button className='btn bg-blue-600 w-full'> Add/View Transactions </button>
+              <Dialog.Root>
+    <Dialog.Trigger asChild>
+      <button className="btn bg-blue-600 w-full">
+        Add/View Accounts
+      </button>
+    </Dialog.Trigger>
+    <Dialog.Portal>
+      <Dialog.Overlay className="bg-black bg-opacity-55 data-[state=open]:animate-overlayShow fixed inset-0" />
+      <Dialog.Content className="data-[state=open]:animate-contentShow fixed top-[30%] left-[50%] max-h-[85vh] w-[90vw] sm:max-w-[450px] md:max-w-[1000px] lg:max-w-[1500px]  translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-slate-800 p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
+        <Dialog.Title className="text-mauve12 m-0 text-[17px] font-medium">
+        Add/View Accounts 
+
+        </Dialog.Title>
+        <Dialog.Description className="text-mauve11 mt-[10px] mb-5 text-[15px] grid  leading-normal">
+          View / Add / Remove Bank accounts 
+        </Dialog.Description>
+        <AccountGrid /> 
+          <Dialog.Close asChild>
+            <button className="bg-green4 mt-4 text-green11 hover:bg-green5 focus:shadow-green7 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none focus:shadow-[0_0_0_2px] focus:outline-none">
+              Exit
+            </button>
+          </Dialog.Close>
+        <Dialog.Close asChild>
+          <button
+            className="text-violet11 hover:bg-violet4 focus:shadow-violet7 absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
+            aria-label="Close"
+          >
+          </button>
+        </Dialog.Close>
+      </Dialog.Content>
+    </Dialog.Portal>
+  </Dialog.Root>
+              <button onClick={Signout} className='btn bg-red-600 w-full'> Signout    </button>
+
+
+            </div>
+          </div>
         </div>
         <Footer />
       </div>

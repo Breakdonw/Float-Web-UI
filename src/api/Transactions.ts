@@ -61,6 +61,7 @@ export async function getSavingsData(){
 }
 
 
+
 export async function getCreditCardData(){
   const getSavingsDataUrl = `${APISERVER}/UserCreditCard`
   try {
@@ -83,6 +84,87 @@ export async function getCreditCardData(){
   }
 }
 
+export async function createUserAccount(accountNumber:string, intrest:number, maxBalance:number, type:String, provider:string, nickName:string) {
+  const createUserAccountUrl = `${APISERVER}/createUserAccount`;
+  try {
+    let response = await axios.post(createUserAccountUrl,{
+      data:{
+        accessToken: JWT,
+  
+      }
+    });
+    const creditAccount: Map<number,financialAccount> = new Map()
+    response.data.data.accounts.forEach((account:financialAccount)  => {
+          creditAccount.set(account.id,account)
+    });
+    return creditAccount
+  } catch (error) {
+    
+
+    console.log(error)
+    return
+  }
+
+}
+
+export async function getUserAccountData() {
+  const getUserAccountsUrl = `${APISERVER}/getUserAccounts`;
+  let jwt = getLocalJwt()
+  let response = await axios.post(getUserAccountsUrl, {
+    data: {
+      accessToken: JWT
+    },
+    
+  });
+  let accounts: Map<number, financialAccount> = new Map();
+  response.data.data.accounts.forEach((account) => {
+    accounts.set(account.id, account)
+  });
+  return accounts;
+}
+
+export async function removeUserAccount(id:number){
+  const getSavingsDataUrl = `${APISERVER}/removeUserAccount`
+  try {
+    let response = await axios.post(getSavingsDataUrl,{
+      data:{
+        accessToken: JWT,
+        userAccountId:id,
+  
+      }
+    });
+
+    return response
+  } catch (error) {
+    
+
+    console.log(error)
+    return
+  }
+}
+
+export async function updateUserAccount(id:number, financialAccount:financialAccount) {
+  const updateUserAccountUrl = `${APISERVER}/updateUseraccount`
+  console.log(financialAccount)
+  try {
+    let response = await axios.post(updateUserAccountUrl,{
+      data:{
+        accessToken: JWT,
+        userAccountId:id,
+        account: financialAccount,
+  
+      }
+    });
+
+    return response
+  } catch (error) {
+    
+
+    console.log(error)
+    return
+  }
+}
+
 export enum accountType{
   checkings,
   savings,
@@ -97,7 +179,7 @@ export interface financialAccount {
   balance: number,
   intrest: number,
   maxBalance: number,
-  type: accountType
+  type: accountType | string | number
   transactions: simpleTransaction[]
 }
 

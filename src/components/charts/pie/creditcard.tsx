@@ -24,16 +24,16 @@ interface PayOffChartData {
 export const calculatePayOffData = (
     account: CreditCardAccount
 ): PayOffChartData => {
-    let { balance, intrest, paymentDue } = account;
+    let { balance, intrest, paymentDue, maxBalance } = account;
     // Amount to avoid interest is the entire balance due
     const amountToAvoidInterest = balance;
     if (paymentDue === undefined) {
         paymentDue = balance * (intrest / 100);
     }
     // If the payment due is less than the total balance, calculate interest on the remaining balance
-    const remainingBalance = balance - paymentDue;
+    const remainingBalance = maxBalance - (paymentDue + amountToAvoidInterest );
     const interestAmount =
-        remainingBalance > 0 ? remainingBalance * (intrest / 100) : 0;
+        remainingBalance > 0 ? amountToAvoidInterest * (intrest / 100) : 0;
 
     return {
         amountToAvoidInterest,
@@ -46,7 +46,6 @@ export const calculatePayOffData = (
 export const generatePieChartData = (account: CreditCardAccount): any[] => {
     const { amountToAvoidInterest, interestAmount, remainingBalance } =
         calculatePayOffData(account);
-    console.log(account);
     const chartData = [
         {
             id: "Total accured debt",
@@ -87,7 +86,7 @@ const CenteredMetric = ({ dataWithArc, centerX, centerY }) => {
                     fill: "white",
                 }}
             >
-                ${total.toLocaleString("en-us")}
+                ${(total - dataWithArc[2].value).toLocaleString("en-us")}
                 <tspan
                     y={centerY + 30}
                     x={centerX}
@@ -96,28 +95,19 @@ const CenteredMetric = ({ dataWithArc, centerX, centerY }) => {
                         fontSize: "50%",
                     }}
                 >
-                    Your monthly spend{" "}
+                    Total monthly spend{" "}
                 </tspan>
-                <tspan
-                    y={centerY + 45}
-                    x={centerX}
-                    style={{
-                        color: "white",
-                        fontSize: "50%",
-                    }}
-                >
-                    is up this month!
-                </tspan>
+
             </text>
         </>
     );
 };
 
-export default function CreditCardSpending({ spendData, info }) {
+export default function CreditCardSpending({ spendData}) {
     const [customLegends, setCustomLegends] = useState<
         LegendDatum<SampleDatum>[]
     >([]);
-    const [data, setdata] = useState([{}]);
+    const [data, setdata] = useState(undefined);
     useEffect(() => {
         let tempData = [];
         Array.from(spendData.values()).forEach((account) => {
@@ -132,7 +122,7 @@ export default function CreditCardSpending({ spendData, info }) {
             <div className="container w-[60%] h-full col col-auto">
                 <ResponsivePie
                     data={data}
-                    margin={{ top: 40, right: 60, bottom: 80, left: 80 }}
+                    margin={{ top: 20, right: 20, bottom: 80, left: 40 }}
                     innerRadius={0.6}
                     padAngle={0.7}
                     cornerRadius={3}
@@ -200,9 +190,9 @@ export default function CreditCardSpending({ spendData, info }) {
                             anchor: "bottom",
                             direction: "row",
                             justify: false,
-                            translateX: 0,
+                            translateX: 10,
                             translateY: 56,
-                            itemsSpacing: 50,
+                            itemsSpacing: 20,
                             itemWidth: 100,
                             itemHeight: 18,
                             itemTextColor: "#fff",
@@ -223,9 +213,9 @@ export default function CreditCardSpending({ spendData, info }) {
                     layers={["legends", "arcs", "arcLabels", CenteredMetric]}
                 ></ResponsivePie>
             </div>
-
+            {data && data.length > 0  ? 
             <div className="flex flex-col p-5 justify-center items-center">
-                <span className="">You need to pay a minimum of <b>${data[1].value.toLocaleString('en-us')}</b> to avoid paying intrest this month.</span>
+                <span className="">You need to pay a minimum of <b>${data[1].value.toLocaleString('en-us')}</b> to avoid paying intrest this month. In addition to your minimum monthly payment.</span>
                     <hr className="w-[100%] my-3" />
                 <h3 className="mt-5">Spending breakdown</h3>
                 <ul>
@@ -234,7 +224,8 @@ export default function CreditCardSpending({ spendData, info }) {
                     <li>Remaining Balance: ${data[2].value.toLocaleString('en-us')}</li>
 
                 </ul>
-            </div>
+            </div> : null}
+
         </>
     );
 }

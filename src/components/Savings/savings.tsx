@@ -174,7 +174,6 @@ export default function Savings({ spenddata }) {
 
     // Call handleResize on component mount to set initial state
     handleResize();
-    console.log(spenddata)
     setSavingsData(transformSavingsData(spenddata))
     // Listen for resize events and update state accordingly
     window.addEventListener("resize", handleResize);
