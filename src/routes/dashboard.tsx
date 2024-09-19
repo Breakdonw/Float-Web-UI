@@ -1,13 +1,13 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, Navigate, redirect, useNavigate, useRouter } from '@tanstack/react-router'
 import '../App.css'
 import Footer from '../components/footer/footer'
 import MonthlySpendingChart from '@/components/charts/pie/monthlySpending'
-import Reoccuring from '../components/reoccuring purchases/reoccuring'
+import Recurring from '../components/recurringpurchases/recurring'
 import Savings from '@/components/Savings/savings'
 import CreditCardPayoff from '@/components/creditcard/creditcard'
 import Transactions from '@/components/transacations/transactions'
 import { clearJwt, verifyJwt } from '@/api/login'
-import { getSavingsData, getUserReoccuring, getUserTransactions, getCreditCardData, removeUserAccount, getUserAccountData, getCategories, getUserRawTransactions } from '@/api/Transactions'
+import { getSavingsData, getUserRecurring, getUserTransactions, getCreditCardData, removeUserAccount, getUserAccountData, getCategories, getUserRawTransactions } from '@/api/Transactions'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from '@/hooks/use-toast'
 import * as Dialog from '@radix-ui/react-dialog';
@@ -33,16 +33,11 @@ export const Route = createFileRoute('/dashboard')({
   }
 })
 
-
 export function Signout(e) {
+  const router = useRouter()
   e.preventDefault()
   clearJwt()
-  throw redirect({
-    to: '/',
-    search: {
-      redirect: location.href
-    }
-  })
+  router.invalidate();
 }
 
 
@@ -78,7 +73,7 @@ function Dashboard() {
 
 
   const [transactionData, setTransactionData] = useState(new Map)
-  const [reoccuringData, setReoccuringData] = useState(new Map)
+  const [recurringData, setRecurringData] = useState(new Map)
   const [savingsData, setSavingsData] = useState(new Map())
   const [creditCardData, setCreditCardData] = useState(new Map())
   const [categories, setCategories] = useState(new Map())
@@ -91,7 +86,7 @@ function Dashboard() {
 
   const fetchData = async () => {
     setTransactionData(await getUserTransactions())
-    setReoccuringData(await getUserReoccuring())
+    setRecurringData(await getUserRecurring())
     setSavingsData(await getSavingsData())
     setCreditCardData(await getCreditCardData())
     setCategories(await fetchCategories('m'))
@@ -110,7 +105,7 @@ function Dashboard() {
           </div>
           <div className='w-full h-full bg-slate-700 rounded-xl flex flex-row overflow-x-hidden '>
 
-            {reoccuringData && reoccuringData.size > 0 ? <Reoccuring reoccuringPurchases={reoccuringData} /> : null}
+            {recurringData && recurringData.size > 0 ? <Recurring recurringPurchases={recurringData} /> : null}
 
           </div>
         </div>

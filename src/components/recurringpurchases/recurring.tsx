@@ -46,7 +46,7 @@ function formatData(data: Map<number, simpleTransaction>) {
  */
 
 
-export default function Reoccuring({ reoccuringPurchases }) {
+export default function Recurring({ reoccuringPurchases }) {
     const [data, setdata] = useState([{}])
     useEffect(() => {
         setdata(formatData(reoccuringPurchases))

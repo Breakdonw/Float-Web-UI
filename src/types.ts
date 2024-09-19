@@ -2,8 +2,8 @@ export type Transaction = {
   id: Number;
   value: Number;
   date: Date;
-  reoccuring: Boolean;
-  reoccuringFreq: Number;
+  recurring: Boolean;
+  recurringFreq: Number;
   company: String;
 };
 

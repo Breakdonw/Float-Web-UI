@@ -135,7 +135,7 @@ const calculateTransactionBalances = (account: financialAccount) => {
       case "income":
         runningBalance += Number(transaction.amount);
         break;
-      case "reoccuring":
+      case "recurring":
         runningBalance += Number(transaction.amount);
         break;
       default:

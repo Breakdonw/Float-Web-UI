@@ -3,7 +3,7 @@ import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the 
 import "ag-grid-community/styles/ag-theme-alpine.css"; // Optional Theme applied to the Data Grid
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
-import { createUserAccount, financialAccount, getUserRawTransactions, removeTransaction, simpleCategory, updateTransaction, updateUserAccount } from '@/api/Transactions';
+import { createTransaction, createUserAccount, financialAccount, getUserRawTransactions, removeTransaction, simpleCategory, updateTransaction, updateUserAccount } from '@/api/Transactions';
 import { CellEditRequestEvent, GetRowIdParams, GridReadyEvent, INumberCellEditorParams, ISelectCellEditorParams, ITextCellEditorParams } from 'node_modules/ag-grid-community/dist/types/core/main';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Input } from '../ui/input';
@@ -44,6 +44,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
           invalid_type_error: "Transaction amount must be Number.",
           required_error: 'Transaction Amount required.'
         }).nonnegative("Transaction Amount Must Be positive")),
+
       company: z.string({
         required_error: "Invocing Company Required",
         invalid_type_error: "Invocing Company Must be a string",
@@ -60,7 +61,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
         required_error: 'Transaction category is required',
         invalid_type_error: "Transaction category must be a int."
       }),
-      type: z.enum(["purchase", "reoccuring", "income"]),
+      type: z.enum(["purchase", "recurring", "income"]),
       frequency: z.number({
         invalid_type_error: "Frequency needs to be a number"
       }).optional(),
@@ -70,7 +71,6 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
       defaultValues: {
-        amount: 0,
         company: "",
         date: new Date(),
         accountid: 0,
@@ -81,7 +81,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
       try {
-        const respose = await createUserAccount(values.accountNumber, values.intrest, values.maxBalance, values.type, values.provider, values.nickName);
+        const respose = createTransaction(values.amount, values.accountid, values.company, values.categoryid, values.type, values.frequency, values.date);
         setRawMap(prevMap => {
           const updatedMap = new Map(prevMap);
           updatedMap.set(respose.id, respose); // Add new account to the map
@@ -132,6 +132,22 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
                   </FormControl>
                   <FormDescription>
                     This is the cost of the transaction.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="frequency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Transaction Frequency</FormLabel>
+                  <FormControl>
+                    <Input placeholder="30 days" type='number' {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    This is the frequency of the transaction in days if applicable.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -265,8 +281,8 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent >
-                      <SelectItem value={field.value[0]}>Checkings account</SelectItem>
-                      <SelectItem value={field.value[1]}>Savings account</SelectItem>
+                      <SelectItem value={field.value[0]}>Purchase</SelectItem>
+                      <SelectItem value={field.value[1]}>Recurring</SelectItem>
                       <SelectItem value={field.value[2]}>Credit account</SelectItem>
                     </SelectContent>
                   </Select>
@@ -494,7 +510,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
       cellEditor: 'agSelectCellEditor',
       valueFormatter: (p) => String(p.value).charAt(0).toUpperCase() + String(p.value).slice(1),
       cellEditorParams: {
-        values: ['purchase', 'creditCardPayment', 'savingsDeposit', 'reoccuring', 'income'],
+        values: ['purchase', 'creditCardPayment', 'savingsDeposit', 'recurring', 'income'],
       },
       flex: 1,
     },

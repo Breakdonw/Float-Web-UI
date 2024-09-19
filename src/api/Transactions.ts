@@ -29,7 +29,7 @@ export async function createTransaction(
   company: string,
   categoryid: number,
   type: string,
-  Frequency: number,
+  Frequency: number | undefined ,
   date: Date
 ) {
   const createTransactionUrl = `${APISERVER}/createTransaction`;
@@ -79,6 +79,7 @@ export async function getUserTransactions() {
       accessToken: JWT,
     },
   });
+  console.log(response)
   let totalTransactions: Map<number, simpleTransaction> = new Map();
   response.data.data.accounts.forEach((account) => {
     account.transactions.forEach((transact) => {
@@ -123,20 +124,20 @@ export async function removeTransaction(id: number) {
   }
 }
 
-export async function getUserReoccuring() {
-  const getUserReoccuringUrl = `${APISERVER}/UserReoccuring`;
-  let response = await axios.get(getUserReoccuringUrl, {
+export async function getUserRecurring() {
+  const getUserRecurringUrl = `${APISERVER}/UserRecurring`;
+  let response = await axios.get(getUserRecurringUrl, {
     params: {
       accessToken: JWT,
     },
   });
-  const totalReoccuring: Map<number, simpleTransaction> = new Map();
+  const totalRecurring: Map<number, simpleTransaction> = new Map();
   response.data.data.accounts.forEach((account) => {
     account.transactions.forEach((transact) => {
-      totalReoccuring.set(transact.id, transact);
+      totalRecurring.set(transact.id, transact);
     });
   });
-  return totalReoccuring;
+  return totalRecurring;
 }
 
 export async function getSavingsData() {
@@ -284,7 +285,7 @@ export enum transactionType {
   purchase,
   creditCardPayment,
   savingsDeposit,
-  reoccuring,
+  recurring,
   income,
 }
 
