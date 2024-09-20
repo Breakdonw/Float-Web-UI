@@ -71,6 +71,8 @@ export async function getUserRawTransactions() {
   return totalAccounts;
 }
 
+
+
 export async function getUserTransactions() {
   const getUserTransactionsUrl = `${APISERVER}/UserTransaction`;
   let jwt = getLocalJwt();
@@ -89,9 +91,10 @@ export async function getUserTransactions() {
   return totalTransactions;
 }
 
+
+
 export async function updateTransaction(financialAccount: Transactions) {
   const updateTransactionUrl = `${APISERVER}/updateTransaction`;
-  console.log(financialAccount);
   try {
     let response = await axios.post(updateTransactionUrl, {
       data: {
@@ -246,7 +249,6 @@ export async function updateUserAccount(
   financialAccount: financialAccount
 ) {
   const updateUserAccountUrl = `${APISERVER}/updateUseraccount`;
-  console.log(financialAccount);
   try {
     let response = await axios.post(updateUserAccountUrl, {
       data: {
@@ -291,6 +293,7 @@ export enum transactionType {
 
 export interface simpleTransaction {
   amount: number;
+  frequency:number;
   category: simpleCategory;
   company: string;
   date: Date;

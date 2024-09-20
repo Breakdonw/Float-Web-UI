@@ -21,7 +21,6 @@ import { useEffect, useState } from "react";
 function formatData(data: Map<number, simpleTransaction>) {
 
 
-
     const combinedDataArray = Array.from(data, ([key, value]) => ({
         id: value.id,
         label: value.company,
@@ -53,11 +52,10 @@ export default function Recurring({ reoccuringPurchases }) {
     }, [])
 
     function getInitials(companyName): string {
-        console.log(companyName)
         const words = companyName.split(' ');
-    
+
         const initials = words.map(word => word.charAt(0).toUpperCase()).join('');
-    
+
         return initials;
     }
 
@@ -74,12 +72,12 @@ export default function Recurring({ reoccuringPurchases }) {
         return opacity;
     };
 
-    let index =0
+    let index = 0
     data.forEach(value => {
         index++;
         reoccuring.push(
             <>
-                <div className="flex flex-col items-center justify-center mx-5" style={{ opacity: calculateOpacity(index, data.length) }}>
+                <div className="flex flex-col items-center justify-center mx-5" >
                     <Avatar className="mb-5">
                         <AvatarImage src="" />
                         <AvatarFallback></AvatarFallback>
@@ -94,7 +92,20 @@ export default function Recurring({ reoccuringPurchases }) {
     return (
         <>
 
-            {reoccuring}
+            <>
+                <div className='justify-center items-center'>
+                    <div className="relative w-full p-16  overflowx-hidden">
+                        <div className="flex absolute left-0 animate-marquee-infinite">
+                            <div className='flex w-full justify-around'>
+                                {reoccuring}
+                            </div>
+                            <div className='flex w-full justify-around'>
+                                {reoccuring}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </>
 
         </>
     )

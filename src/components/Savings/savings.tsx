@@ -1,16 +1,21 @@
 import { useState, useEffect } from "react";
 import { Linechart } from "../charts/linechart/linechart";
 import { accountType, financialAccount, simpleTransaction, transactionType } from "@/api/Transactions";
-import dayJs from  'dayjs'
+import dayJs from 'dayjs'
 import { Skeleton } from "../ui/skeleton";
+import { number } from "zod";
 
 
 export function transformSavingsData(accounts: financialAccount[]) {
   let savingsAccounts = []
 
   accounts.forEach(account => {
-    if (account) {
+    if (account && account.maxBalance && account.intrest) {
       const balanceLine = {
+        goal:account.maxBalance,
+        name:account.nickName,
+        curBal:account.balance,
+        intrest:account.intrest,
         id: `${account.nickName} - Actual`,
         color: 'hsl(59, 100.00%, 68.60%)',
         data: calculateTransactionBalances(account)
@@ -18,7 +23,8 @@ export function transformSavingsData(accounts: financialAccount[]) {
       const futureProjection = calculateFutureProjection(account)
       const goalLine = createGoalLine(account);
 
-
+      if(balanceLine.data.length >= 1){
+        
       savingsAccounts.push({
         id: account.nickName,
         data: [
@@ -29,10 +35,10 @@ export function transformSavingsData(accounts: financialAccount[]) {
 
     }
 
+      }
 
 
   })
-
 
 
 
@@ -40,19 +46,28 @@ export function transformSavingsData(accounts: financialAccount[]) {
 }
 
 const createGoalLine = (account: financialAccount) => {
-  const lastTransactionDate = account.transactions[account.transactions.length - 1]?.date;
-  const monthsToGoal = 12; // Example: Reach goal in 1 year
+  // Fallback to current date if there are no transactions
+  const lastTransactionDate = account.transactions.length > 0
+    ? account.transactions[account.transactions.length - 1].date
+    : new Date(); // Use current date if no transactions are available
+
+  const monthsToGoal = 12; //  Reach goal in 1 year
 
   const goalLineData = [];
 
   for (let i = 0; i <= monthsToGoal; i++) {
-    const nextDate = new Date(lastTransactionDate);
-    nextDate.setMonth(nextDate.getMonth() + i);
+    // Use dayJs to ensure date is valid
+    const nextDate = dayJs(lastTransactionDate).add(i, 'month').toDate(); // Add months correctly
 
-    goalLineData.push({
-      x: dayJs(nextDate).format('YYYY-MM-DD'),
-      y: account.maxBalance
-    });
+    // Check if nextDate is valid
+    if (!isNaN(nextDate.getTime())) {
+      goalLineData.push({
+        x: dayJs(nextDate).format('YYYY-MM-DD'),
+        y: account.maxBalance * (i / 12)
+      });
+    } else {
+      console.warn(`Invalid date generated: ${nextDate}`);
+    }
   }
 
   return {
@@ -61,7 +76,6 @@ const createGoalLine = (account: financialAccount) => {
     data: goalLineData
   };
 };
-
 
 const balanceAfterTransaction = (currentBalance: number, transaction: simpleTransaction): number => {
   switch (transaction.type) {
@@ -77,7 +91,7 @@ const balanceAfterTransaction = (currentBalance: number, transaction: simpleTran
 };
 
 const averageMonthlyDeposit = (transactions: simpleTransaction[]): number => {
-  const depositTransactions = transactions.filter(transaction => String(transaction.type) ===  "savingsDeposit" || String(transaction.type) === "income");
+  const depositTransactions = transactions.filter(transaction => String(transaction.type) === "savingsDeposit" || String(transaction.type) === "income");
   const totalDeposits = depositTransactions.reduce((acc, transaction) => acc + transaction.amount, 0);
   const uniqueMonths = new Set(depositTransactions.map(transaction => dayJs(transaction.date).get('month')));
 
@@ -86,7 +100,9 @@ const averageMonthlyDeposit = (transactions: simpleTransaction[]): number => {
 
 const calculateFutureProjection = (account: financialAccount) => {
   const transactions = account.transactions;
-  const lastTransactionDate = transactions[transactions.length - 1]?.date;
+  const lastTransactionDate = transactions.length > 0 
+    ? transactions[transactions.length - 1].date 
+    : new Date(); // Fallback to current date if no transactions
   const currentBalance = transactions.length > 0
     ? transactions.reduce((balance, transaction) => balanceAfterTransaction(balance, transaction), 0)
     : account.balance;
@@ -94,7 +110,7 @@ const calculateFutureProjection = (account: financialAccount) => {
   // Simple projection over 12 months
   const futureData = [];
   const monthsToProject = 12; // Example: 1 year projection
-  const monthlyDeposit = averageMonthlyDeposit(transactions);
+  const monthlyDeposit = averageMonthlyDeposit(transactions) || 0; // Fallback to 0 if no deposits
 
   for (let i = 1; i <= monthsToProject; i++) {
     const nextDate = new Date(lastTransactionDate);
@@ -102,7 +118,7 @@ const calculateFutureProjection = (account: financialAccount) => {
 
     futureData.push({
       x: dayJs(nextDate).format('YYYY-MM-DD'),
-      y: currentBalance + (monthlyDeposit * i) 
+      y: currentBalance + (monthlyDeposit * i) // Project balance based on monthly deposits
     });
   }
 
@@ -117,8 +133,8 @@ const calculateTransactionBalances = (account: financialAccount) => {
   let runningBalance = 0; // Initial balance before transactions
   const balanceData = [];
 
-  if(account.transactions.length < 1){
-    return [{x:dayJs(new Date).format('YYYY-MM-DD'),y:0}, ]
+  if (account.transactions.length < 1) {
+    return [{ x: dayJs(new Date).format('YYYY-MM-DD'), y: 0 },]
   }
   account.transactions.forEach(transaction => {
     // Update running balance based on transaction type
@@ -157,17 +173,22 @@ export default function Savings({ spenddata }) {
   const [savingsData, setSavingsData] = useState([])
   const [currentSelected, setCurrentSelected] = useState(0)
 
-  function viewNextAccount(){
-    if (currentSelected >= spenddata.accounts.size){
-        setCurrentSelected(0)
-    } else {setCurrentSelected(currentSelected+1)}
+  function viewNextAccount() {
+    if (currentSelected >= savingsData.length - 1) {
+      setCurrentSelected(0)
+    } else { setCurrentSelected(currentSelected + 1) }
   }
 
+  function viewPrevAccount() {
+    if (currentSelected == 0) {
+      setCurrentSelected(savingsData.length -1)
+    } else { setCurrentSelected(currentSelected - 1) }    
+  }
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth > 2000 && !showExtraSavingsdata) {
+      if (window.innerWidth > 1800 && !showExtraSavingsdata) {
         setshowExtraSavingsdata(true);
-      } else if (window.innerWidth <= 2000 && showExtraSavingsdata) {
+      } else if (window.innerWidth <= 1800 && showExtraSavingsdata) {
         setshowExtraSavingsdata(false);
       }
     };
@@ -184,20 +205,26 @@ export default function Savings({ spenddata }) {
   }, [showExtraSavingsdata]);
   return (
     < >
-      {savingsData.length > 0 && savingsData[currentSelected].data[0].length > 0 ? <>
-       {/* tedst {savingsData[2].id} */}
-       <Linechart spendData={savingsData[currentSelected].data} /> 
+
+      <div className="flex flex-row h-full w-full">
+
+        {savingsData.length > 0 && savingsData[currentSelected].data.length > 0 ? <>
+          <Linechart spendData={savingsData[currentSelected].data} />
         </>
-        : <> <Skeleton className="w-[120%] m-5" />  </> }
-      {showExtraSavingsdata && (
-        <div className="">
-          <span><b>Savings Goal</b>: $14,000</span>
-          <span><b>Eta to Goal</b>: 5/8/2028</span>
-          <span><b>Current Bal</b>: $6,000</span>
-          <span><b>Monthly Contribution</b>: $200</span>
-          <span><b>Interest Rate</b>: 4.25%</span>
-        </div>
-      )}
+          : <> <Skeleton className="w-[100%] m-5" />  </>}
+        {showExtraSavingsdata && savingsData && savingsData.length >0 ?  (
+          <div className="flex mt-10  flex-col">
+            <span><b>Savings Goal</b>: ${savingsData? savingsData[currentSelected].data[0].goal : '0'  }</span>
+            <span><b>Current Bal</b>: ${savingsData? savingsData[currentSelected].data[0].curBal : '0'  }</span>
+            <span><b>Interest Rate</b>: {savingsData? savingsData[currentSelected].data[0].intrest : '0'  }%</span>
+          </div>
+        ) :null}
+      </div>
+      <div className="mt-auto flex-row">
+          <button onClick={viewPrevAccount}>prev</button>
+          <span> | { savingsData && savingsData.length >0  ? savingsData[currentSelected].data[0].name : 'Account'} |</span>
+          <button onClick={viewNextAccount}>next</button>
+      </div>
     </>
   )
 }

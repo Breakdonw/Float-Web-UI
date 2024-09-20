@@ -37,7 +37,7 @@ const CenteredMetric = ({ dataWithArc, centerX, centerY }) => {
                 textAnchor="middle"
                 dominantBaseline="top"
                 style={{
-                    fontSize: '250%',
+                    fontSize: '150%',
                     fontWeight: 600,
                     fill: 'white',
                 }}
@@ -48,17 +48,9 @@ const CenteredMetric = ({ dataWithArc, centerX, centerY }) => {
                     x={centerX}
                     style={{
                         color: 'white',
-                        fontSize: '24%',
+                        fontSize: '50%',
                     }}
                 >Your monthly spend </tspan>
-                <tspan
-                    y={centerY + 45}
-                    x={centerX}
-                    style={{
-                        color: 'white',
-                        fontSize: '24%',
-                    }}
-                >is up this month!</tspan>
             </text>
 
         </>

@@ -475,7 +475,6 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
       flex: 1,
       valueFormatter: (params) => {
         const category = cat.get(params.value); // Map back to the account object using act map
-        console.log(params.value)
         return category ? category.name : ''; // Show the nickname in the grid
       },
       onCellValueChanged: (event) => {
@@ -662,7 +661,6 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
             });
 
             // Update the rowData to trigger a re-render
-            console.log(updatedRowData)
             setRowData(updatedRowData);
 
             // Optionally update the backend with the modified transaction
@@ -683,7 +681,6 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
           // Update state with the original rawMap structure intact
           setRawMap(updatedRawMap);
 
-          console.log("date")
           // Update rowData to trigger re-render
           const updatedRowData = formatTransactionData(updatedRawMap)
           setRowData(updatedRowData);

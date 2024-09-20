@@ -340,7 +340,6 @@ export default function AccountGrid() {
       // Update the rowData to trigger re-render
       const updatedRowData = Array.from(updatedMap.values());
       setRowData(updatedRowData);
-      console.log(newItem)
       updateUserAccount(data.id, newItem)
     },
     [rawMap],

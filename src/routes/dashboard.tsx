@@ -13,6 +13,7 @@ import { toast } from '@/hooks/use-toast'
 import * as Dialog from '@radix-ui/react-dialog';
 import AccountGrid, { createAccount } from '@/components/grids/accountgrid'
 import TransactionGrid from '@/components/grids/transactiongrid'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export const Route = createFileRoute('/dashboard')({
   component: Dashboard,
@@ -33,15 +34,24 @@ export const Route = createFileRoute('/dashboard')({
   }
 })
 
-export function Signout(e) {
-  const router = useRouter()
-  e.preventDefault()
-  clearJwt()
-  router.invalidate();
+function LogoutButton() {
+  const router = useRouter();
+
+  function handleSignout(e) {
+    e.preventDefault();
+    clearJwt(); // Assuming you clear any JWT or session info here
+    router.navigate({ to: '/' }); // Adjust path if needed
+  }
+
+  return (
+    <button className='btn bg-red-600 w-full' onClick={handleSignout}>
+      Sign Out
+    </button>
+  );
 }
 
 
-async function fetchCategories(specificVal:string | null):Promise<Map<number,simpleCategory>| undefined> {
+async function fetchCategories(specificVal: string | null): Promise<Map<number, simpleCategory> | undefined> {
   const fetchedCategories = await getCategories(); // Assuming getCategories returns a list of categories
 
   switch (specificVal) {
@@ -50,17 +60,17 @@ async function fetchCategories(specificVal:string | null):Promise<Map<number,sim
       fetchedCategories.forEach(c => {
         n.push(c.name)
       });
-      return n 
-    break;
+      return n
+      break;
 
     case 'm':
-      let m:Map<number,simpleCategory> = new Map()  
-    fetchedCategories?.forEach(c=>{
-        m.set(c.id,c)
+      let m: Map<number, simpleCategory> = new Map()
+      fetchedCategories?.forEach(c => {
+        m.set(c.id, c)
       })
 
-    return m as Map<number,simpleCategory>;
-  
+      return m as Map<number, simpleCategory>;
+
     default:
       break;
   }
@@ -68,8 +78,57 @@ async function fetchCategories(specificVal:string | null):Promise<Map<number,sim
 }
 
 
-function Dashboard() {
+export function exportTransactionsToCSV(transactionsMap: Map<number, simpleTransaction>, filename: string = 'transactions.csv') {
+  // Step 1: Define the CSV headers
+  const headers = ['ID', 'Amount', 'Company', 'Type', 'Frequency', 'Category ID', 'Category Name', 'Date'].join(',') + '\n';
 
+  // Step 2: Map the transactions from the Map object into CSV format (row by row)
+  const csvRows = Array.from(transactionsMap.values()).map(transaction => {
+      const { id, amount, company, type, frequency, category, date } = transaction;
+      return [
+          id,
+          amount,
+          company,
+          type,
+          frequency || '', // Handle missing Frequency values
+          category.id,      // Accessing category ID
+          category.name,    // Accessing category name
+          new Date(date).toLocaleDateString('en-US')  // Format date as needed
+      ].join(',');
+  });
+
+  // Step 3: Combine headers and rows into a single CSV string
+  const csvContent = headers + csvRows.join('\n');
+
+  // Step 4: Create a Blob from the CSV string
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+  // Step 5: Create a link to download the Blob
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+
+  // Step 6: Append the link to the body and trigger the download
+  document.body.appendChild(link);
+  link.click();
+
+  // Step 7: Cleanup the link after download
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+
+
+function Dashboard() {
+  async function handleExportClick() {
+    try {
+        const transactions = await getUserTransactions(); // This returns a Map of transactions
+        exportTransactionsToCSV(transactions); // Pass the transactions Map to the export function
+    } catch (error) {
+        console.error('Error fetching transactions:', error);
+    }
+}
 
 
   const [transactionData, setTransactionData] = useState(new Map)
@@ -100,26 +159,72 @@ function Dashboard() {
         <div className='w-full h-full columns-2 p-10 pb-0'>
           <div className='w-full h-full bg-slate-700 rounded-xl'>
             <div className='flex flex-row justify-center items-center  w-full h-full ' >
-              {transactionData && transactionData.size ? <MonthlySpendingChart spendData={transactionData} info={"test string"} /> : null}
+              {transactionData && transactionData.size ? <MonthlySpendingChart spendData={transactionData} info={"test string"} /> :
+                <>
+                  <Skeleton className='w-[35%] h-[75%] rounded-full' />
+                  <div className='ml-4 h-full w-[60%] pt-24 space-y-6'>
+                    <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                    <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                    <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                    <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                  </div>
+                </>
+              }
             </div>
+            <h2>Monthly Spend </h2>
           </div>
           <div className='w-full h-full bg-slate-700 rounded-xl flex flex-row overflow-x-hidden '>
 
-            {recurringData && recurringData.size > 0 ? <Recurring recurringPurchases={recurringData} /> : null}
+            {recurringData && recurringData.size > 0 ? <Recurring reoccuringPurchases={recurringData} /> :
+              <>
+                <Skeleton className='w-[35%] h-[75%] rounded-full mt-10' />
+                <div className='ml-4 h-full w-[60%] pt-24 space-y-6'>
+                  <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                  <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                  <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                  <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                </div>
+              </>
 
+            }
           </div>
+              <h2>Recurring</h2>
         </div>
         <div className=' w-full h-full columns-3 p-10 '>
-          <div className='flex flex-row  h-full bg-slate-700  rounded-xl '>
-            {savingsData && savingsData.size > 0 ? <Savings spenddata={savingsData} /> : null}
+          <div className='flex flex-col  h-full bg-slate-700  rounded-xl '>
+            {savingsData && savingsData.size > 0 ? <Savings spenddata={savingsData} /> :
+              <>
+                <Skeleton className='w-[35%] h-[55%] rounded-full mt-20 ml-4' />
+                <div className='mx-4 h-full w-[60%] pt-24 space-y-6'>
+                  <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                  <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                  <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                  <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                </div>
+              </>
+            }
           </div>
-          <div className='flex flex-row  h-full bg-slate-700 rounded-xl'>
-            {creditCardData && creditCardData.size > 0 ? <CreditCardPayoff spendData={creditCardData} /> : null}
+          <h2>Savings Goal</h2>
+          
+          <div className='flex flex-col  h-full bg-slate-700 rounded-xl'>
+            {creditCardData && creditCardData.size > 0 ? <CreditCardPayoff spendData={creditCardData} /> :
+              <>
+              <Skeleton className='w-[35%] h-[55%] rounded-full mt-20 ml-4' />
+              <div className='mx-4 h-full w-[60%] pt-24 space-y-6'>
+                <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                <Skeleton className='w-[100%] h-[10%] rounded-full' />
+                <Skeleton className='w-[100%] h-[10%] rounded-full' />
+              </div>
+            </>
+            }
           </div>
+          <h2> Credit Card</h2>
+
           <div className='flex flex-col h-full   bg-slate-700  rounded-xl'>
-            <span className='row my-5'> <h1>Welcome user!</h1></span>
+            <span className='row my-5'> <h1>Welcome!</h1></span>
             <hr className='row w-full ' />
-            <div className='p-5 justify-between space-y-5'>
+            <div className='px-5 pt-3 justify-between space-y-1'>
               <Dialog.Root>
                 <Dialog.Trigger asChild>
                   <button className="btn bg-blue-600 w-full">
@@ -187,7 +292,11 @@ function Dashboard() {
                   </Dialog.Content>
                 </Dialog.Portal>
               </Dialog.Root>
-              <button onClick={Signout} className='btn bg-red-600 w-full'> Signout    </button>
+              <button onClick={handleExportClick} className='btn w-full bg-blue-600'>
+                Export to CSV
+              </button>
+              
+              <LogoutButton/>
 
 
             </div>
