@@ -19,6 +19,26 @@ jobs:
         with:
           submodules: true
           lfs: false
+
+      # Install Bun
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          export BUN_INSTALL="$HOME/.bun"
+          export PATH="$BUN_INSTALL/bin:$PATH"
+
+      # Verify Bun installation
+      - name: Verify Bun Version
+        run: bun --version
+
+      # Install dependencies using Bun
+      - name: Install dependencies with Bun
+        run: bun install
+
+      # Build using Bun
+      - name: Build Project with Bun
+        run: bun run build
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
