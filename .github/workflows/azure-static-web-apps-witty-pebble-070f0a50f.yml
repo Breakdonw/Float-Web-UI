@@ -38,7 +38,7 @@ jobs:
 
       - name: Build And Deploy
         id: builddeploy
-        uses: Azure/static-web-apps@v3
+        uses: Azure/static-web-apps@v1
 
 
   close_pull_request_job:
