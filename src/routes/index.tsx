@@ -1,12 +1,13 @@
 import { createFileRoute, Link, redirect, useNavigate, useRouter } from '@tanstack/react-router'
 import '../App.css'
-import svg from '../assets/react.svg'
+import svg from '@/assets/sailboat.webp'
 import Footer from '../components/footer/footer'
 import { useState } from 'react'
-import { Login } from '@/api/login'
+import { AuthService } from '@/api/login'
 import { toast } from '@/hooks/use-toast'
 
 
+const authservice = new AuthService();
 
 
 
@@ -46,7 +47,7 @@ function Index() {
         setError(false)
         checkEmail()
         if (error === true) { return; }
-        Login(email, password).then(res => {
+        authservice.login(email, password).then(res => {
             if (res.error === true) {
                 toast({
                     title: "Error",
@@ -64,7 +65,7 @@ function Index() {
         <div className='h-[100vh] w-[100vw]  flex justify-center items-center   bg-slate-900 '>
             <div className='flex flex-col justify-between h-screen w-screen items-center    '>
                 <div className='container  flex justify-center items-center'>
-                    <img className='logo ' src={svg} alt="" />
+                    <img className='logo rounded-full  ' src={svg} alt="" />
                     <h1>Float</h1>
                 </div>
                 <div className=' mb-auto w-1/4  my-5 p-6'>

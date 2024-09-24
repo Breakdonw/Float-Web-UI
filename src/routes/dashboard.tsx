@@ -6,19 +6,21 @@ import Recurring from '../components/recurringpurchases/recurring'
 import Savings from '@/components/Savings/savings'
 import CreditCardPayoff from '@/components/creditcard/creditcard'
 import Transactions from '@/components/transacations/transactions'
-import { clearJwt, verifyJwt } from '@/api/login'
-import { getSavingsData, getUserRecurring, getUserTransactions, getCreditCardData, removeUserAccount, getUserAccountData, getCategories, getUserRawTransactions } from '@/api/Transactions'
+import { AuthService } from '@/api/login'
+import { getSavingsData, getUserRecurring, getUserTransactions, getCreditCardData, simpleTransaction, getCategories, getUserRawTransactions, simpleCategory } from '@/api/Transactions'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from '@/hooks/use-toast'
 import * as Dialog from '@radix-ui/react-dialog';
-import AccountGrid, { createAccount } from '@/components/grids/accountgrid'
+import AccountGrid from '@/components/grids/accountgrid'
 import TransactionGrid from '@/components/grids/transactiongrid'
 import { Skeleton } from '@/components/ui/skeleton'
+
+const authService = new AuthService() 
 
 export const Route = createFileRoute('/dashboard')({
   component: Dashboard,
   beforeLoad: async ({ location }) => {
-    if (await verifyJwt() === false) {
+    if (await authService.verifyJwt() === false) {
       toast({
         title: "Error",
         variant: "destructive",
@@ -39,7 +41,7 @@ function LogoutButton() {
 
   function handleSignout(e) {
     e.preventDefault();
-    clearJwt(); // Assuming you clear any JWT or session info here
+    authService.clearJwt(); // Assuming you clear any JWT or session info here
     router.navigate({ to: '/' }); // Adjust path if needed
   }
 

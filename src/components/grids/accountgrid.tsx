@@ -356,6 +356,7 @@ export default function AccountGrid() {
       flex: 1,
       editable: true,
       cellEditor: "agNumberCellEditor",
+      filter: true,
       cellEditorParams: {
         precision: 2,
       } as INumberCellEditorParams
@@ -370,6 +371,7 @@ export default function AccountGrid() {
     },
     {
       field: "nickName",
+      filter: true,
       editable: true,
       flex: 1,
     },

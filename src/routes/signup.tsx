@@ -1,17 +1,16 @@
 import  { useRouter, createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
-import svg from '@/assets/react.svg'
+import svg from '@/assets/sailboat.webp'
 import Footer from '@/components/footer/footer'
 import '@/App.css'
 import { Link } from '@tanstack/react-router'
-import { register } from 'module'
-import { Register } from '@/api/login'
+import { AuthService } from '@/api/login'
 import { toast } from '@/hooks/use-toast'
 import { useState } from 'react'
-import { serverResponse } from '@/types'
 export const Route = createFileRoute('/signup')({
   component: Signup,
 })
 
+const authservice = new AuthService();
 
 
 export default function Signup() {
@@ -105,7 +104,7 @@ export default function Signup() {
     checkPassword()
     checkEmail()
     if (error === true) { return; }
-    Register(firstName, lastName, email, password).then( async (res) => {
+    authservice.register(firstName, lastName, email, password).then( async (res) => {
       if (await res.error == true) {
         toast({
           variant: "destructive",
@@ -125,7 +124,7 @@ export default function Signup() {
       <div className='h-[100vh] w-[100vw]  flex justify-center items-center   bg-slate-900 '>
         <div className='flex flex-col justify-between h-screen w-screen items-center    '>
           <div className='container  flex justify-center items-center'>
-            <img className='logo ' src={svg} alt="" />
+            <img className='logo  rounded-full' src={svg} alt="" />
             <h1>Float</h1>
           </div>
           <div className=' mb-auto w-1/4  my-5 p-6'>

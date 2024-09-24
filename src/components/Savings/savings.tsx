@@ -1,21 +1,26 @@
 import { useState, useEffect } from "react";
 import { Linechart } from "../charts/linechart/linechart";
-import { accountType, financialAccount, simpleTransaction, transactionType } from "@/api/Transactions";
+import { accountType, financialAccount, simpleTransaction, transactionType, SavingsAccount} from "@/api/Transactions";
 import dayJs from 'dayjs'
 import { Skeleton } from "../ui/skeleton";
 import { number } from "zod";
 
 
-export function transformSavingsData(accounts: financialAccount[]) {
+export function transformSavingsData(data: SavingsAccount[]) {
   let savingsAccounts = []
-
+  let accounts = []
+  data.forEach(act=>{
+    accounts.push(new SavingsAccount(act.id,act.accountNumber,act.provider,act.nickName,act.balance,act.transactions,act.intrest,act.maxBalance))
+  })
+  console.log(accounts)
+  
   accounts.forEach(account => {
-    if (account && account.maxBalance && account.intrest) {
+    if (account && account.goalBalance && account.interestRate) {
       const balanceLine = {
-        goal:account.maxBalance,
+        goal:account.goalBalance,
         name:account.nickName,
         curBal:account.balance,
-        intrest:account.intrest,
+        intrest:account.interestRate,
         id: `${account.nickName} - Actual`,
         color: 'hsl(59, 100.00%, 68.60%)',
         data: calculateTransactionBalances(account)
@@ -45,7 +50,7 @@ export function transformSavingsData(accounts: financialAccount[]) {
   return savingsAccounts
 }
 
-const createGoalLine = (account: financialAccount) => {
+const createGoalLine = (account: SavingsAccount) => {
   // Fallback to current date if there are no transactions
   const lastTransactionDate = account.transactions.length > 0
     ? account.transactions[account.transactions.length - 1].date
@@ -63,7 +68,7 @@ const createGoalLine = (account: financialAccount) => {
     if (!isNaN(nextDate.getTime())) {
       goalLineData.push({
         x: dayJs(nextDate).format('YYYY-MM-DD'),
-        y: account.maxBalance * (i / 12)
+        y: account.goalBalance * (i / 12)
       });
     } else {
       console.warn(`Invalid date generated: ${nextDate}`);
@@ -98,7 +103,7 @@ const averageMonthlyDeposit = (transactions: simpleTransaction[]): number => {
   return uniqueMonths.size > 0 ? totalDeposits / uniqueMonths.size : 0;
 };
 
-const calculateFutureProjection = (account: financialAccount) => {
+const calculateFutureProjection = (account: SavingsAccount) => {
   const transactions = account.transactions;
   const lastTransactionDate = transactions.length > 0 
     ? transactions[transactions.length - 1].date 
@@ -129,7 +134,7 @@ const calculateFutureProjection = (account: financialAccount) => {
   };
 };
 
-const calculateTransactionBalances = (account: financialAccount) => {
+const calculateTransactionBalances = (account: SavingsAccount) => {
   let runningBalance = 0; // Initial balance before transactions
   const balanceData = [];
 
@@ -138,7 +143,7 @@ const calculateTransactionBalances = (account: financialAccount) => {
   }
   account.transactions.forEach(transaction => {
     // Update running balance based on transaction type
-    switch (transaction.type as string) {
+    switch (transaction.type) {
       case "purchase":
         runningBalance -= Number(transaction.amount);
         break;

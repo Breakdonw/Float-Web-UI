@@ -441,6 +441,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
       flex: 2,
       editable: true,
       cellEditor: "agTextCellEditor",
+      filter: true,
       cellEditorParams: {
         maxLength: 55,
 
@@ -451,6 +452,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
       flex: 1,
       editable: true,
       cellEditor: "agSelectCellEditor",
+      filter: true,
       cellEditorParams: {
         values: Array.from(act.values()).map(account => account.nickName), // Display account names
       },
@@ -469,6 +471,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
       field: "category",
       editable: true,
       cellEditor: 'agSelectCellEditor',
+      filter: true,
       cellEditorParams: {
         values: Array.from(cat.values()).map(cat => cat.name), // Use the fetched category names
       } as ISelectCellEditorParams,
@@ -487,6 +490,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
     {
       headerName: 'Frequency (days)',
       field: "Frequency",
+      filter: 'agNumberColumnFilter',
       editable: true,
       cellEditor: "agNumberCellEditor",
       cellEditorParams: {
@@ -497,6 +501,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
     {
       field: "date",
       cellEditor: "agNumberCellEditor",
+      filter: 'agDateColumnFilter',
       cellEditorParams: {
         precision: 2,
       } as INumberCellEditorParams,
@@ -506,6 +511,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
     {
       field: "type",
       editable: true,
+      filter:true,
       cellEditor: 'agSelectCellEditor',
       valueFormatter: (p) => String(p.value).charAt(0).toUpperCase() + String(p.value).slice(1),
       cellEditorParams: {
