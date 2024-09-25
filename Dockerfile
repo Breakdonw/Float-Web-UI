@@ -13,6 +13,8 @@ RUN bun install
 # Copy the rest of the application source code
 COPY . /app
 
+RUN bun run build
+
 # Build your app (Optional: if you have any build process, run it here)
 # Example: RUN bun build (if you're compiling TypeScript or similar)
 # In most cases, you may not need this for Bun-based apps.
