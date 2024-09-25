@@ -65,3 +65,5 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WITTY_PEBBLE_070F0A50F }}
           action: "close"
+        env:
+        VITE_API_SERVER_URL: ${{secrets.REACT_API_URL}}
