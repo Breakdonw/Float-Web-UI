@@ -28,6 +28,11 @@ jobs:
       - name: Verify Bun Version
         run: ~/.bun/bin/bun --version
 
+      # Remove node_modules and package-lock.json before installing
+      - name: Clean up node_modules and package-lock
+        run: |
+          rm -rf node_modules package-lock.json
+
       # Install dependencies using Bun from the installation path
       - name: Install dependencies with Bun
         run: ~/.bun/bin/bun install 
