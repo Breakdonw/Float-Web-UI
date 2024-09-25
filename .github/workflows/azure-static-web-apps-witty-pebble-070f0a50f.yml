@@ -30,7 +30,7 @@ jobs:
 
       # Install dependencies using Bun from the installation path
       - name: Install dependencies with Bun
-        run: ~/.bun/bin/bun install --force
+        run: ~/.bun/bin/bun install --legacy-peer-deps
 
       # Build using Bun from the installation path
       - name: Build Project with Bun
