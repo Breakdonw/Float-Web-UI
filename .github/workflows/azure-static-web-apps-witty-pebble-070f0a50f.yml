@@ -36,9 +36,12 @@ jobs:
       # Install dependencies using Bun from the installation path
       - name: Install dependencies with Bun
         run: ~/.bun/bin/bun install 
+        
 
       # Build using Bun from the installation path
       - name: Build Project with Bun
+        env:
+          VITE_API_SERVER_URL: ${{ secrets.REACT_API_URL }}
         run: ~/.bun/bin/bun run build
 
       - name: Build And Deploy
@@ -66,5 +69,4 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WITTY_PEBBLE_070F0A50F }}
           action: "close"
-        env:
-          VITE_API_SERVER_URL: ${{ secrets.REACT_API_URL }}
+        
