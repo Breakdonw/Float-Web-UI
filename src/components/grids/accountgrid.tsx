@@ -78,7 +78,7 @@ export default function AccountGrid() {
 
       <>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="max-h-screen  space-y-8 overflow-y-scroll">
             <FormField
               control={form.control}
               name="accountNumber"
@@ -223,7 +223,7 @@ export default function AccountGrid() {
             <AlertDialog.Description className="text-mauve11 mt-4 mb-5 text-[15px] leading-normal">
               This creates a new account based on your specification.
             </AlertDialog.Description>
-            <div className='container'>
+            <div className='container 	'>
               <CreateAccountForm />
 
               <AlertDialog.Action asChild>
