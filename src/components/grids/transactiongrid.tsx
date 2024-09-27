@@ -67,7 +67,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
       frequency: z.preprocess(
         (a) => parseInt(z.string().parse(a),10),z.number({
         invalid_type_error: "Frequency needs to be a number"
-      }).optional()),
+      })),
 
     })
 
@@ -83,14 +83,20 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
       try {
-        const respose = createTransaction(values.amount, values.accountid, values.company, values.categoryid, values.type, values.frequency, values.date);
+        let response =await createTransaction(values.amount, values.accountid, values.company, values.categoryid, values.type, values.frequency, values.date);
+        debugger
+        response = {
+          ...response,
+          category:response.categoryid,
+          account:response.accountid,
+          date:new Date(response.date).toLocaleDateString()
+        }
         setRawMap(prevMap => {
           const updatedMap = new Map(prevMap);
-          updatedMap.set(respose.id, respose); // Add new account to the map
-          return updatedMap;
+          updatedMap.set(response.id, response); // Add new account to the map
         });
-
-        setRowData(prevRowData => [...prevRowData, respose]);
+        
+        setRowData(prevRowData => [...prevRowData, response]);
 
       } catch (error) {
         console.error('Failed to create Transaction', error);
@@ -148,7 +154,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
                     <Input placeholder="30 days" type='number' {...field} />
                   </FormControl>
                   <FormDescription>
-                    This is the frequency of the transaction in days if applicable.
+                    This is the frequency of the transaction in days. (0 if non recurring)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

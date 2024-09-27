@@ -88,7 +88,7 @@ export async function createTransaction(
         },
       },
     });
-    const creditAccount: financialAccount = response.data.data;
+    const creditAccount = response.data.data;
     return creditAccount;
   } catch (error) {
     console.log(error);
