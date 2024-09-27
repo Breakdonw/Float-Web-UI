@@ -25,12 +25,14 @@ export default function AccountGrid() {
       accountNumber: z.string({
         required_error: "Account Number Required",
       }),
-      intrest: z.number({
-      }).nonnegative("intrest Must be positive"),
-      maxBalance: z.number({
+      intrest: z.preprocess(
+        (a) => parseFloat(z.string().parse(a)), z.number({
+        }).nonnegative("intrest Must be positive")),
+      maxBalance: z.preprocess(
+        (a) => parseFloat(z.string().parse(a)), z.number({
         invalid_type_error: "Max balance must be a Number"
 
-      }).nonnegative("Max balance Must be positive"),
+      }).nonnegative("Max balance Must be positive")),
 
       type: z.enum(["checkings", "savings", "credit"]),
       provider: z.string({
@@ -267,9 +269,10 @@ export default function AccountGrid() {
                   setRawMap(prevMap => {
                     const updatedMap = new Map(prevMap);
                     updatedMap.delete(params.data.id); // Remove account from the map
-                    return updatedMap;})
+                    return updatedMap;
+                  })
 
-                    setRowData(prevRowData => prevRowData.filter(account => account.id !== params.data.id));
+                  setRowData(prevRowData => prevRowData.filter(account => account.id !== params.data.id));
 
                 }} className="text-red11 bg-red4 hover:bg-red5 focus:shadow-red7 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]">
                   Yes, delete account

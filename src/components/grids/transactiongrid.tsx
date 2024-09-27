@@ -53,18 +53,21 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
         required_error: "Date of transacation Required",
         invalid_type_error: "Date of transacation must be a date"
       }),
-      accountid: z.number({
+      accountid: z.preprocess(
+        (a) => parseInt(z.string().parse(a),10),z.number({
         required_error: "An account is required for the charge",
         invalid_type_error: "Account id must be an int."
-      }),
-      categoryid: z.number({
+      })),
+      categoryid: z.preprocess(
+        (a) => parseInt(z.string().parse(a),10),z.number({
         required_error: 'Transaction category is required',
         invalid_type_error: "Transaction category must be a int."
-      }),
+      })),
       type: z.enum(["purchase", "recurring", "income"]),
-      frequency: z.number({
+      frequency: z.preprocess(
+        (a) => parseInt(z.string().parse(a),10),z.number({
         invalid_type_error: "Frequency needs to be a number"
-      }).optional(),
+      }).optional()),
 
     })
 
@@ -73,8 +76,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
       defaultValues: {
         company: "",
         date: new Date(),
-        accountid: 0,
-        categoryid: 0,
+
         type: "purchase",
       },
     })
@@ -100,7 +102,7 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
     {
       accounts.forEach(account => {
         actList.push(
-          <><SelectItem className=' hover:bg-slate-700' key={account.id} value={account.id}> {account.nickName} ({account.accountNumber}) </SelectItem></>
+          <><SelectItem className=' hover:bg-slate-700'  key={account.id} value={String(account.id)}> {account.nickName} ({account.accountNumber}) </SelectItem></>
         )
       })
     }
@@ -109,11 +111,10 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
     {
       categories.forEach(cat => {
         catList.push(
-          <><SelectItem className=' hover:bg-slate-700' key={cat.id} value={cat.id}> {cat.name}  </SelectItem></>
+          <><SelectItem className=' hover:bg-slate-7000' key={cat.id} value={String(cat.id)}> {cat.name}  </SelectItem></>
         )
       })
     }
-
     return (
 
 
@@ -220,10 +221,10 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
               render={({ field }) => (
                 <FormItem className='flex flex-col' >
                   <FormLabel>Account</FormLabel>
-                  <Select  >
+                  <Select onValueChange={field.onChange} {...field} >
                     <FormControl>
                       <SelectTrigger >
-                        <SelectValue placeholder="Select account type " />
+                        <SelectValue placeholder="Select account " />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className='bg-slate-900 text-white'>
@@ -247,10 +248,10 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
               render={({ field }) => (
                 <FormItem className='flex flex-col' >
                   <FormLabel>Category</FormLabel>
-                  <Select  >
+                  <Select onValueChange={field.onChange} {...field} >
                     <FormControl>
                       <SelectTrigger >
-                        <SelectValue placeholder="Select account type " />
+                        <SelectValue placeholder="Select category " />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className='bg-slate-900 text-white'>
@@ -270,7 +271,6 @@ export default function TransactionGrid({ categories, accounts }: { categories: 
             <FormField
               control={form.control}
               name="type"
-
               render={({ field }) => (
                 <FormItem className='flex flex-col' >
                   <FormLabel>Type</FormLabel>
