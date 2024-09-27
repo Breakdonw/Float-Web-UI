@@ -113,7 +113,7 @@ export default function Signup() {
         })
         setError(true)
       } else {
-       router.navigate({to:'/dashboard'})
+       router.navigate({to:'/'})
       }
     })
   }
