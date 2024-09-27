@@ -35,6 +35,8 @@ jobs:
 
       # Build using Bun from the installation path
       - name: Build Project with Bun
+        env:
+          VITE_API_SERVER_URL: ${{ secrets.REACT_API_URL }}
         run: ~/.bun/bin/bun run build
 
       - name: Zip artifact for deployment

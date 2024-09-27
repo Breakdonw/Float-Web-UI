@@ -118,7 +118,7 @@ registration. Here's a breakdown of what it does: */
         email,
         password,
       });
-      this.setJwt(response.data.accessToken);
+      await this.setJwt(response.data.accessToken);
       console.log("Registered Successfully");
       return true;
     } catch (error) {

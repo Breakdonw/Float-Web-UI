@@ -104,7 +104,7 @@ export default function Signup() {
     checkPassword()
     checkEmail()
     if (error === true) { return; }
-    authservice.register(firstName, lastName, email, password).then( async (res) => {
+    await authservice.register(firstName, lastName, email, password).then( async (res) => {
       if (await res.error == true) {
         toast({
           variant: "destructive",
